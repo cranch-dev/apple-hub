@@ -181,6 +181,7 @@ local ok, err = pcall(function()
 		Icon = "apple",
 		Author = "Cranch",
 		Folder = "AppleHub",
+		Size = UDim2.fromOffset(580, 460),
 		KeySystem = {
 			Note = "Masukkan key Apple Hub. Belum punya? Klik Get key lalu ambil key gratis di Discord.",
 			SaveKey = isfile ~= nil and writefile ~= nil,
