@@ -91,6 +91,95 @@ function Hub.start(opts)
 		return decode(raw)
 	end
 
+	local function clearWindowMarker()
+		local genv = getgenv or function()
+			return _G
+		end
+		pcall(function()
+			genv().__applehub_windui = nil
+		end)
+	end
+
+	-- WindUI saves the verified key as <Folder>/<hwid>.key. Deleting it makes the
+	-- next loader run show the key prompt again. device.txt is left alone so the
+	-- server still recognises this device (and the edge binding stays intact).
+	local function clearSavedKey()
+		if not (isfile and delfile) then
+			return 0
+		end
+
+		local ids = { device, tostring(game:GetService("Players").LocalPlayer.UserId) }
+		local hwidOk, hwid = pcall(function()
+			return gethwid()
+		end)
+		if hwidOk and type(hwid) == "string" and #hwid > 0 then
+			table.insert(ids, hwid)
+		end
+
+		local removed = 0
+		local seen = {}
+
+		for _, folder in ipairs({ "AppleHub", "Temp" }) do
+			for _, id in ipairs(ids) do
+				local path = folder .. "/" .. id .. ".key"
+				if not seen[path] then
+					seen[path] = true
+					local fileOk, exists = pcall(isfile, path)
+					if fileOk and exists and pcall(delfile, path) then
+						removed += 1
+					end
+				end
+			end
+		end
+
+		-- Fallback: some executors name the saved key file differently.
+		if listfiles then
+			local listOk, files = pcall(listfiles, "AppleHub")
+			if listOk and type(files) == "table" then
+				for _, entry in ipairs(files) do
+					if type(entry) == "string" then
+						local path = entry
+						if not path:find("/", 1, true) then
+							path = "AppleHub/" .. path
+						end
+						if path:sub(-4) == ".key" and not seen[path] and pcall(delfile, path) then
+							seen[path] = true
+							removed += 1
+						end
+					end
+				end
+			end
+		end
+
+		return removed
+	end
+
+	local function resetHub()
+		if not alive then
+			return
+		end
+		alive = false
+
+		local removed = 0
+		local keyOk, keyResult = pcall(clearSavedKey)
+		if keyOk and type(keyResult) == "number" then
+			removed = keyResult
+		end
+
+		if removed > 0 then
+			notify("Reset", "Key tersimpan dihapus. Hub ditutup, jalankan loader lagi.")
+		else
+			notify("Reset", "Hub ditutup, jalankan loader lagi.")
+		end
+		print("[Apple Hub] Reset selesai (" .. tostring(removed) .. " file key dihapus). Jalankan ulang loader untuk memasukkan key.")
+
+		task.wait(2)
+		pcall(function()
+			windui.ScreenGui:Destroy()
+		end)
+		clearWindowMarker()
+	end
+
 	local home = window:Tab({ Title = "Home", Icon = "house" })
 	local status = home:Paragraph({
 		Title = "Apple Hub",
@@ -123,17 +212,23 @@ function Hub.start(opts)
 					end
 				end,
 			},
+			{
+				Title = "Reset",
+				Icon = "rotate-ccw",
+				Callback = function()
+					window:Dialog({
+						Title = "Reset Hub",
+						Content = "Hub akan ditutup dan key yang tersimpan di perangkat ini dihapus. Key tetap terikat ke perangkat, jadi key yang sama masih bisa dipakai. Setelah reset, jalankan loader lagi untuk memasukkan key.",
+						Icon = "triangle-alert",
+						Buttons = {
+							{ Title = "Batal", Variant = "Secondary" },
+							{ Title = "Reset", Icon = "rotate-ccw", Variant = "Primary", Callback = resetHub },
+						},
+					})
+				end,
+			},
 		},
 	})
-
-	local function clearWindowMarker()
-		local genv = getgenv or function()
-			return _G
-		end
-		pcall(function()
-			genv().__applehub_windui = nil
-		end)
-	end
 
 	local function stopHub(message)
 		if not alive then

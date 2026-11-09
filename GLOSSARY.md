@@ -31,3 +31,8 @@ _Avoid_: plan, level, rank
 **Edge**:
 Batas jumlah perangkat (HWID) tempat satu Key boleh dipakai.
 _Avoid_: slot, device limit
+
+**Reset (lokal)**:
+Menghapus Key yang tersimpan di perangkat dan menutup Hub, sehingga loader
+berikutnya meminta Key lagi. Tidak mengubah Redemption maupun Edge di server.
+_Avoid_: logout, revoke (revoke = Key dimatikan di server)

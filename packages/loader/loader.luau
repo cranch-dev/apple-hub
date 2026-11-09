@@ -102,6 +102,12 @@ local ok, err = pcall(function()
 	local device = deviceId()
 	local session = nil
 
+	-- WindUI saves the verified key in <Folder>/<hwid>.key, so the folder has to
+	-- exist before the key system tries to write it.
+	if makefolder and isfolder and not isfolder("AppleHub") then
+		pcall(makefolder, "AppleHub")
+	end
+
 	local function validate(key)
 		local raw = httpCall(
 			"POST",

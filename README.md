@@ -59,6 +59,23 @@ curl -s localhost:8787/health
 curl -s localhost:8787/v1/manifest
 ```
 
+## Pemakaian di Hub
+
+Tab **Home** berisi kartu sesi dengan tiga tombol:
+
+- **Discord** — menyalin link Discord ke clipboard.
+- **Cek key** — memvalidasi ulang key saat itu juga tanpa menunggu jadwal 30 menit.
+- **Reset** — menutup Hub dan menghapus key yang tersimpan di perangkat, sehingga
+  menjalankan loader lagi akan memunculkan prompt key. Key tetap terikat ke
+  perangkat ini (Redemption dan Edge tidak berubah), jadi key yang sama masih
+  bisa dipakai. Untuk melepas ikatan perangkat, admin memakai
+  `key reset-edge <id>`.
+
+Key disimpan WindUI di `AppleHub/<hwid>.key`; file itu yang dihapus saat Reset.
+`AppleHub/device.txt` sengaja dibiarkan supaya HWID tidak berubah. Kalau executor
+tidak punya `isfile`/`delfile`, Reset hanya menutup Hub dan prompt tetap muncul
+di run berikutnya karena tidak ada key yang tersimpan.
+
 ## CLI admin
 
 ```bash
