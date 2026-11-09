@@ -1,0 +1,19 @@
+{
+  "name": "apple-hub",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "gen": "bun run scripts/gen-hub.ts",
+    "dev": "bun run gen && bun run --filter @applehub/worker dev",
+    "deploy": "bun run gen && bun run --filter @applehub/worker deploy",
+    "test": "bun run gen && bun run --filter @applehub/worker test",
+    "typecheck": "bun run gen && bun run --filter @applehub/worker typecheck && bun run --filter @applehub/cli typecheck",
+    "db:migrate:local": "bun run --filter @applehub/worker db:migrate:local",
+    "db:migrate:remote": "bun run --filter @applehub/worker db:migrate:remote",
+    "discord:register": "bun run scripts/register-discord.ts"
+  },
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  }
+}

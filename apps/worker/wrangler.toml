@@ -1,0 +1,21 @@
+name = "applehub"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+workers_dev = true
+
+# Split burst protection per IP. The authoritative limiter is D1-backed so it
+# also works under `wrangler dev` and survives isolates.
+[[ratelimits]]
+name = "VALIDATE_RATE"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "applehub"
+database_id = "ac4f38ca-1601-4ff3-ae9e-f485589f0443"
+migrations_dir = "migrations"
+
+[observability]
+enabled = true
