@@ -82,7 +82,7 @@ Env CLI: `APPLEHUB_API` (default `http://127.0.0.1:8787`) dan `APPLEHUB_ADMIN_TO
 ## Discord
 
 1. Buat application di Discord Developer Portal.
-2. Ambil **Public Key**, simpan sebagai secret Worker: `bunx wrangler secret put DISCORD_PUBLIC_KEY`.
+2. Ambil **Public Key**, simpan sebagai secret Worker (dari `apps/worker`): `bunx wrangler secret put DISCORD_PUBLIC_KEY`.
 3. Buat bot, isi `.env` lokal:
 
    ```bash
@@ -97,13 +97,29 @@ Perintah: `/key` (key gratis 24 jam, 1 perangkat, cooldown 24 jam per Discord ID
 
 ## Deploy
 
+`wrangler.toml` ada di `apps/worker/`, jadi perintah `wrangler` harus dijalankan
+dari folder itu (atau pakai `-c apps/worker/wrangler.toml` dari root). Dari root:
+
 ```bash
 bun run gen
-bunx wrangler d1 migrations apply applehub --remote
+bun run db:migrate:remote            # = wrangler d1 migrations apply applehub --remote
+cd apps/worker
 bunx wrangler secret put ADMIN_TOKEN
 bunx wrangler secret put DISCORD_PUBLIC_KEY
+cd ../..
 bun run deploy
 ```
+
+Dari root tanpa pindah folder, padanannya:
+
+```bash
+bunx wrangler d1 migrations apply applehub --remote -c apps/worker/wrangler.toml
+bunx wrangler secret put ADMIN_TOKEN -c apps/worker/wrangler.toml
+bunx wrangler secret put DISCORD_PUBLIC_KEY -c apps/worker/wrangler.toml
+```
+
+Tanpa `-c` atau tanpa `cd apps/worker`, wrangler akan error
+`No configuration file found` karena ia hanya membaca konfigurasi di folder kerja.
 
 Setelah deploy, loader tersedia di `https://<worker>/loader`. Bagikan:
 
